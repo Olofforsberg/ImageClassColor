@@ -11,8 +11,8 @@
 namespace igg {
 
 class DummyIoStrategy : public IoStrategy {
-  bool Write(const std::string&, const ImageData&) const override;
-  ImageData Read(const std::string&) const override;
+	public:
+		bool Write(const std::string&, const ImageData&) const override;
+  		ImageData Read(const std::string&) const override;
 };
-
 }  // namespace igg

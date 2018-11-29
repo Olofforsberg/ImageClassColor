@@ -3,9 +3,9 @@
 // Email: igor.bogoslavskyi@uni-bonn.de.
 
 #include "igg_image/io_strategies/png_strategy.h"
-
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace igg {
 
