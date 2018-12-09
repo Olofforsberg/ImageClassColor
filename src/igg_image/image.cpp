@@ -27,7 +27,7 @@ bool Image::ReadFromDisk(const std::string& file_name)
 	cols_ = img_read.cols;
 	max_val_ = img_read.max_val;
 	data_.clear();
-	data_.reserve((int) img_read.data[0].size());
+	data_.reserve((int) rows_ * cols_);
 	for (int i = 0; i < (int) img_read.data[0].size(); ++i)
 	{
 		pixel new_pixel;
@@ -37,7 +37,6 @@ bool Image::ReadFromDisk(const std::string& file_name)
 		data_.push_back(new_pixel);
 	}
 	return (!img_read.data.empty());
-	img_read.data.clear();
 }
 void Image::WriteToDisk(const std::string& file_name)
 {
@@ -45,14 +44,18 @@ void Image::WriteToDisk(const std::string& file_name)
 	img_saved.max_val = max_val_;
 	img_saved.cols = cols_;
 	img_saved.rows = rows_;
-	img_saved.data.reserve((int) data_.size());
-	for (int i = 0; i < (int) data_.size(); ++i)
-	{		
-		img_saved.data[0].push_back(data_[i].data[0]);
-		img_saved.data[1].push_back(data_[i].data[1]);
-		img_saved.data[2].push_back(data_[i].data[2]);
-	}
-	io_strategy.Write(file_name, img_saved); 	
+	img_saved.data.reserve(3);
+	std::vector<int> red(rows_ * cols_, 0);
+  	std::vector<int> green(rows_ * cols_, 0);
+  	std::vector<int> blue(rows_ * cols_, 0);
+  	for (int i = 0; i < rows_*cols_; ++i)
+  	{
+  		red[i] = data_[i].data[0];
+  		green[i] = data_[i].data[1];
+  		blue[i] = data_[i].data[2];
+  	}
+	img_saved.data = {red, green, blue};
+	io_strategy.Write(file_name, img_saved);
 }
 
 std::vector<float> Image::ComputeHistogram(int bins) const
@@ -79,18 +82,15 @@ void Image::DownScale(int scale)
 	std::vector<igg::pixel> new_img(rows_*cols_);
 
 	//this for goes through the colors red green and blue
-	for (int c = 0; c < 3; ++c)
+	for (int j = 0; j < cols_; ++j)
 	{
-		for (int j = 0; j < cols_; ++j)
+		for (int i = 0; i < rows_; ++i)
 		{
-			for (int i = 0; i < rows_; ++i)
-			{
-				//std::cout << "i " << i << " j " << j << " i*cols_*scale+j*scale " << i*cols_*scale+j*scale << " data size "<< data_.size() << std::endl;
-				new_img[(int) i*cols_+j].data[c] = data_[(int) i*cols_*(scale*scale) + (int) j*scale].data[c];
-			}
+			//std::cout << "i " << i << " j " << j << " i*cols_*scale+j*scale " << i*cols_*scale+j*scale << " data size "<< data_.size() << std::endl;
+			new_img[(int) i*cols_+j] = data_[(int) i*cols_*(scale*scale) + (int) j*scale];
 		}
-		data_ = new_img;
 	}
+	data_ = new_img;
 }
 
 void Image::UpScale(int scale)
@@ -99,15 +99,31 @@ void Image::UpScale(int scale)
 	cols_ *= scale;
 	std::vector<igg::pixel> new_img(rows_*cols_);
 		//this for goes through the colors red green and blue
-	for (int c = 0; c < 3; ++c)
+	for (int i = 0; i < rows_; ++i)
 	{
-		for (int i = 0; i < rows_; ++i)
+		for (int j = 0; j < cols_; ++j)
 		{
-			for (int j = 0; j < cols_; ++j)
-			{
-				new_img[i*cols_+j].data[c] = data_[(int) i/scale*cols_/scale + (int) j/scale].data[c];
-			}
+			new_img[i*cols_+j] = data_[(int) i/scale*cols_/scale + (int) j/scale];
 		}
-		data_ = new_img;
 	}
+	data_ = new_img;
+}
+
+void Image::Print()
+{
+	std::cout << " Print, data size "  << data_.size() << std::endl;
+	for (int i = 0; i < data_.size(); ++i)
+	{
+		std::cout << " data red " << data_[i].data[0] << std::endl;
+	}
+/*	for (int r = 0; r < rows_; ++r) {
+    	for (int c = 0; c < cols_; ++c) {
+      		//int idx = r * cols_ + c;
+			//data_[idx] = new_pixel;
+			pixel pix = this->at(r,c);
+			std::cout << " red pixel " << pix.data[0] << std::endl;
+
+			//this->at(r,c) = new_pixel;
+    	}
+  	}*/
 }

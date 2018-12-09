@@ -24,7 +24,8 @@ namespace igg {
 			std::vector<float> ComputeHistogram(int bins) const;
 			void DownScale(int scale);
 			void UpScale(int scale);
-			igg::pixel Pixel; 
+			igg::pixel Pixel;
+			void Print();
 
 			~Image();
 		private:
